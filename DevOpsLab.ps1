@@ -9,6 +9,7 @@ $Root = Join-Path $Desktop 'DevOps Lab'
 $Exp1 = Join-Path $Root '1. Event Registration Form'
 $Exp2 = Join-Path $Root '2. Git and GitHub Commands'
 $Exp3 = Join-Path $Root '3. GitHub Source Code Management'
+$Exp5 = Join-Path $Root '5. Jenkins CI-CD Integration'
 $Exp6 = Join-Path $Root '6. Docker Commands'
 $Exp7 = Join-Path $Root '7. Docker Containerized Application'
 $Exp11 = Join-Path $Root '11. JavaScript Selenium Testing'
@@ -537,6 +538,113 @@ Git Credential Manager may open a browser for sign-in. Git author name/email are
     }
 }
 
+
+function New-Experiment5 {
+    $repoUrl = 'https://github.com/SureshVadla0807/test1.git'
+    New-Item -ItemType Directory -Path $Exp5 -Force | Out-Null
+
+    # The Jenkinsfile is already committed in the public GitHub repository.
+    # This experiment only creates the manual instructions and guides the user
+    # through creating/configuring a Pipeline item in the Jenkins web interface.
+    $manual = @'
+EXPERIMENT 5 - JENKINS CI/CD INTEGRATION
+
+GitHub repository:
+https://github.com/SureshVadla0807/test1.git
+
+Purpose:
+Connect the existing public GitHub repository to Jenkins and run the Jenkinsfile already stored in the repository.
+
+BEFORE YOU START:
+- Jenkins must already be installed and running.
+- The Git plugin must be available in Jenkins.
+- The Jenkinsfile must already be committed in the ROOT of the repository on the main branch.
+- The repository is public, so no GitHub credentials are needed for checkout.
+- Do not create, copy, commit, or push another Jenkinsfile for this experiment. The file is already in GitHub.
+
+PART A - CREATE A NEW JENKINS ITEM
+
+1. Open the Jenkins dashboard in your browser. Common local address: http://localhost:8080
+2. On the dashboard, click "New Item".
+3. Enter the item name: test1
+4. Select "Pipeline" (not Freestyle project).
+5. Click "OK".
+
+If an item named test1 already exists, do not create a duplicate. Open that existing item and click "Configure" instead.
+
+PART B - CONNECT THE GITHUB REPOSITORY
+
+1. In the job configuration page, scroll down to the "Pipeline" section.
+2. For "Definition", choose "Pipeline script from SCM".
+3. For "SCM", choose "Git".
+4. In "Repository URL", paste:
+   https://github.com/SureshVadla0807/test1.git
+5. For "Credentials", choose "- None -" because the repository is public.
+6. For "Branches to build" / "Branch Specifier", enter:
+   */main
+7. For "Script Path", enter:
+   Jenkinsfile
+8. Leave "Lightweight checkout" at its default setting unless your lab instructor specifies otherwise.
+9. Click "Save".
+
+PART C - RUN THE PIPELINE
+
+1. Open the test1 job page.
+2. Click "Build Now".
+3. Wait for the build to finish.
+4. Open the build number under "Build History".
+5. Click "Console Output".
+6. Verify that the pipeline stages run and the last line says:
+   Finished: SUCCESS
+
+WHAT TO RECORD FOR THE LAB:
+- Screenshot of the Jenkins job configuration showing Pipeline script from SCM.
+- Screenshot of the Build History with a successful build.
+- Screenshot of Console Output showing the completed stages and Finished: SUCCESS.
+
+TROUBLESHOOTING:
+- If Jenkins cannot find the Jenkinsfile, confirm that the file is named exactly Jenkinsfile (capital J, no extension), is in the repository root, and is committed to main.
+- If checkout works but a later stage fails, read the FIRST error in Console Output. The checkout step and the pipeline execution stages are separate.
+- A message such as "No changes" by itself usually means no new repository commit was detected; it does not prove the build failed.
+- Because the repository is public, do not add a GitHub password or personal access token just for cloning it.
+'@
+
+    Write-TextFile (Join-Path $Exp5 'manual.txt') $manual
+
+    $clipboardCopied = $false
+    try {
+        Set-Clipboard -Value $repoUrl
+        $clipboardCopied = $true
+    } catch {
+        $clipboardCopied = $false
+    }
+
+    Write-Title 'EXPERIMENT 5 - JENKINS PIPELINE SETUP'
+    if ($clipboardCopied) {
+        Write-Host 'GitHub repository URL copied to clipboard.' -ForegroundColor Green
+    } else {
+        Write-Host 'Clipboard copy was unavailable. Copy the repository URL shown below.' -ForegroundColor Yellow
+    }
+    Write-Host $repoUrl -ForegroundColor Cyan
+    Write-Host ''
+    Write-Host 'NEXT STEPS - FOLLOW THESE IN THE JENKINS BROWSER:' -ForegroundColor Yellow
+    Write-Host '1. Open the Jenkins dashboard (commonly http://localhost:8080).'
+    Write-Host '2. Click New Item.'
+    Write-Host '3. Enter item name: test1'
+    Write-Host '4. Select Pipeline, then click OK.'
+    Write-Host '   If test1 already exists, open it and click Configure instead.'
+    Write-Host '5. Scroll to Pipeline > Definition: Pipeline script from SCM.'
+    Write-Host '6. SCM: Git | Repository URL: paste the copied URL | Credentials: - None -'
+    Write-Host '7. Branch Specifier: */main | Script Path: Jenkinsfile'
+    Write-Host '8. Click Save, open the test1 job, and click Build Now.'
+    Write-Host '9. Open the build number > Console Output; check for Finished: SUCCESS.'
+    Write-Host ''
+    Write-Host 'The Jenkinsfile is already in GitHub. No git clone, file copy, commit, or push is required for this experiment.' -ForegroundColor Green
+    Write-Host 'Manual instructions:' -ForegroundColor Green
+    Write-Host (Join-Path $Exp5 'manual.txt')
+    Open-TextFile (Join-Path $Exp5 'manual.txt')
+}
+
 function New-Experiment6 {
     New-Item -ItemType Directory -Path $Exp6 -Force | Out-Null
     $commands = @'
@@ -823,6 +931,7 @@ while ($true) {
     Write-Host '1. Event Registration Form'
     Write-Host '2. Git and GitHub Commands'
     Write-Host '3. GitHub Source Code Management (uses Experiment 1)'
+    Write-Host '5. Jenkins CI/CD Integration (connect existing GitHub Jenkinsfile)'
     Write-Host '6. Docker Commands'
     Write-Host '7. Docker Containerized Application (port 8000)'
     Write-Host '11. JavaScript and Selenium - Open Selenium website'
@@ -835,12 +944,13 @@ while ($true) {
             '1'  { New-Experiment1 -OpenBrowser }
             '2'  { New-Experiment2 }
             '3'  { Start-Experiment3 }
+            '5'  { New-Experiment5 }
             '6'  { New-Experiment6 }
             '7'  { Start-Experiment7 }
             '11' { New-Experiment11 }
             '12' { Start-Experiment12 }
             '0'  { Write-Host 'Exiting DevOps Lab.' -ForegroundColor Cyan; return }
-            default { Write-Host 'Invalid choice. Select 1, 2, 3, 6, 7, 11, 12, or 0.' -ForegroundColor Yellow }
+            default { Write-Host 'Invalid choice. Select 1, 2, 3, 5, 6, 7, 11, 12, or 0.' -ForegroundColor Yellow }
         }
     } catch {
         Write-Host "`nERROR: $($_.Exception.Message)" -ForegroundColor Red
